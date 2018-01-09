@@ -13,9 +13,9 @@ def wait_pin_change(pin):
             active = 0
         time.sleep_ms(1)
 
-def http_get(host, path):
+def http_get(host, path, port=80):
     return_data = ''
-    addr = socket.getaddrinfo(host, 80)[0][-1]
+    addr = socket.getaddrinfo(host, port)[0][-1]
     s = socket.socket()
     s.connect(addr)
     s.send(bytes('GET /%s HTTP/1.0\r\nHost: %s\r\n\r\n' % (path, host), 'utf8'))
@@ -28,24 +28,10 @@ def http_get(host, path):
     s.close()
     return return_data
 
-def get_text(web_data):
-    lines = web_data.split('\n')
-    nextline = False
-    output = ''
-    for line in lines:
-	if line.startswith('</font>'):
-           break
-        if nextline:
-           output = output + line
-        if line.startswith('<font size="+2">'):
-           nextline = True
-    return output.split('<br')[0]
-
 pin0 = machine.Pin(0, machine.Pin.IN, machine.Pin.PULL_UP)
 while True:
     wait_pin_change(pin0)
     if pin0.value() == 0:  # trig on press only
         print(pin0.value(), time.time())
-        web_data = http_get('www.pangloss.com','')
-        msg = get_text(web_data)
-        print(msg)
+        msg_data = http_get('192.168.1.130', '', port=5000)
+        print(msg_data)
